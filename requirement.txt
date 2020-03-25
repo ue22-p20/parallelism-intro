@@ -1,0 +1,19 @@
+ipykernel
+ipythontutor
+ipywidgets
+numpy
+scipy
+pandas
+matplotlib
+seaborn
+mpi4py 
+
+# jupyter tools
+#
+rise>=5.6.0.dev5
+jupyter-contrib-nbextensions
+
+# output html static 
+ipypublish[sphinx]
+sphinx-rtd-theme
+jupyter_client
