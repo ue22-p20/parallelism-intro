@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 #include <vector>
+#include <numeric>
 
 void pi_thread_worker(const uint& nbpoint, const uint tid, const uint nbthread, std::vector<double>& output){
   double s = 0.;
