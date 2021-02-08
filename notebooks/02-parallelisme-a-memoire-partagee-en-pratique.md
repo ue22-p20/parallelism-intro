@@ -13,7 +13,7 @@ nbhosting:
   title: "m\xE9moire partag\xE9e"
 ---
 
-# Parallélisme à mémoire distribuée
+# Parallélisme à mémoire partagée
 
 +++
 

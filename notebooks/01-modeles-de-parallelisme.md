@@ -10,7 +10,7 @@ kernelspec:
   language: python
   name: python3
 nbhosting:
-  title: "modeles de parall\xE9lisme"
+  title: "mod\xE8les de parall\xE9lisme"
 ---
 
 # Modèles de parallélisme
