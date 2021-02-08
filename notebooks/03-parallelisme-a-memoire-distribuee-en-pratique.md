@@ -9,6 +9,8 @@ kernelspec:
   display_name: Python 3
   language: python
   name: python3
+nbhosting:
+  title: "m\xE9moire distribu\xE9e"
 ---
 
 # Parallélisme à mémoire distribuée
@@ -82,7 +84,7 @@ Si tout fonctionne bien vous devez avoir, au bout de quelques secondes, en derni
 
 Nous pouvons ensuite initialiser le client de notre cluster de calcul pour le notebook
 
-```{code-cell}
+```{code-cell} ipython3
 import ipyparallel as parallel
 clients = parallel.Client(profile="mpi")
 clients.block = False  # use synchronous computations
@@ -97,7 +99,7 @@ Pour vérifier que tout est opérationnel il nous suffit alors de regarder si no
 Pour cela on peut appeler le code suivant et si tout fonctionne on doit avoir, sur chaque cœur, un communicateur de taille 4.
 Si c'est le cas c'est que tout fonctionne correctement et on va pouvoir passer aux choses sérieuses.
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 from mpi4py import MPI
 
@@ -128,7 +130,7 @@ Elle permet donc d'avoir directement dans Python toute les possibilités de MPI 
 
 Plus précisément pour utiliser MPI dans Python il faut utiliser le sous-module MPI du module mpi4py. Son import se fait de la manière classique suivante :
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 from mpi4py import MPI
 ```
@@ -145,7 +147,7 @@ Il existe un communicateur par défaut dans MPI qui s'appelle `COMM_WORLD` et qu
 
 Dans `mpi4py` pour récupérer le communicateur il suffit simplement de récupérer la variable `COMM_WORLD` du module `MPI`.
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 comm = MPI.COMM_WORLD
 print(comm)
@@ -155,7 +157,7 @@ A partir de ce communicateur nous pouvons déjà déterminer :
 * La taille du communicateur, i.e. le nombre de processus qu'il met en relation
 * Le rank de chaque processus dans ce communicateur
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 print( f"Je suis le processus {comm.Get_rank()} sur {comm.Get_size()}")
 ```
@@ -165,13 +167,13 @@ Cela dépend du problème que l'on traite. Mais il peut arriver que l'on ait bes
 
 Par exemple imaginons que l'on veuille que nos processus de rang pair ne communiquent qu'entre eux et de même pour nos processus de rang impair. La solution serait de créer un sous-communicateur pour les processus de rang pair et un autre pour les processus de rang impair.
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 
 comm.group.rank
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 
 rank = comm.Get_rank()
@@ -232,7 +234,7 @@ Par opposition les deux fonctions `Send` et `Receive` sont plus proches de l'imp
 
 Pour illustrer cela regardons l'occupation mémoire d'une liste de 100 flottants.
 
-```{code-cell}
+```{code-cell} ipython3
 import pickle 
 import numpy as np
 import sys
@@ -249,7 +251,7 @@ print(f"Size of a serialized = {sys.getsizeof(a_serialized)}")
 On constate donc que la liste sérialisée est l'objet qui prend le plus de place en mémoire par rapport au tableau numpy qui pourra être envoyé tel quel sans sérialisation.
 Il est donc préférable de manière générale quand on fait du mpi4py de travailler avec des tableaux numpy plutot qu'avec les types de base Python.
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 import numpy as np
 rank = comm.Get_rank()
@@ -270,7 +272,7 @@ Il faut cependant faire attention à une chose !!! Les opérations `Send` et `Re
 
 Par exemple si vous voulez faire un échange de données entre deux processus, faites bien attention au sens dans lequel vous faites les `Send`, `Recv`. La bonne solution étant la suivante :
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 rank = comm.Get_rank()
 n = 5
@@ -295,7 +297,7 @@ else: # Proc 2 and 3
 
 Je le reconnais c'est un peu lourd comme syntaxe pour s'échanger deux tableaux de 5 flottants. Mais pas d'inquiétude il y a bien évidemment une astuce ! Si vous voulez échanger deux données entre deux processus vous pouvez utiliser la fonction  `Sendrecv`.
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 rank = comm.Get_rank()
 n = 5
@@ -316,7 +318,7 @@ if dest != -1:
 
 Et afin de simplifier encore le processus d'échange il existe la fonction `Sendrecv_replace` qui fait l'échange en place sans avoir besoin de buffer pour la réception.
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 rank = comm.Get_rank()
 n = 5
@@ -351,7 +353,7 @@ Dans le cadre de ce cours nous ne nous intéresserons donc pas aux communication
 Nous venons de voir comment faire des communications entre deux processus MPI, avec cela nous pouvons en théorie faire tout et n'importe quoi.
 C'est vrai. Néanmoins il existe dans le norme MPI des fonctions chargées de faire des communications globales, par exemple un processus envoie une donnée à tous les autres. Vous pourriez me dire on peut le faire avec plusieurs communications *Point-to-point* ! C'est vrai cela donnerait quelque chose du genre :
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 rank = comm.Get_rank()
 n = 5
@@ -375,7 +377,7 @@ Afin de faciliter ce genre d'opérations il existe donc dans MPI des fonctions t
 
 Par exemple pour faire l'opération précédente il suffit d'utiliser la fonction :
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 import numpy as np
 rank=comm.Get_rank()
@@ -409,7 +411,7 @@ Schématiquement ces deux opérations peuvent se représenter de la manière sui
 
 L'utilisation de scatter et gather se fait de la manière suivante :
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 rank=comm.Get_rank()
 size=comm.Get_size()
@@ -426,7 +428,7 @@ comm.Scatter(data, receive_buf, root=source_rank)
 print(f"After Scatter : Proc {rank} - recv = {receive_buf}")
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 %%px 
 
 size = comm.Get_size()
@@ -461,7 +463,7 @@ Pour finir sur les opérations collectives nous allons voir une fonction extrêm
 Par exemple en séquentiel le calcul de la somme des éléments d'une liste peut se faire par l'opération de réduction suivante en Python :
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 a = [1,2,3,4,5]
 sum(a[:])
 ```
@@ -479,7 +481,7 @@ Pour ces deux fonctions il est nécessaire de fournir un argument supplémentair
 * MPI.MAXLOC - retourne la valeur maximale et le rang du processus sur lequel elle se trouve
 * MPI.MINLOC - retourne la valeur minimum et le rang du processus sur lequel elle se trouve
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 
 rank = comm.Get_rank()
@@ -494,7 +496,7 @@ if rank == root_rank:
     print(f"Proc {rank} reduce results = {recv}")
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 
 rank = comm.Get_rank()
@@ -526,7 +528,7 @@ $$ \pi \simeq \sum_{i=0}^{N-1}   \frac{1}{N} \cdot \frac{4}{1+ (\frac{ i + 0.5}{
 
 Une implémentation possible est la suivante :
 
-```{code-cell}
+```{code-cell} ipython3
 def compute_pi_sequential( nbpoint ):
     s = 0
     l = 1./nbpoint
@@ -550,14 +552,14 @@ Dans le notebook précédent nous avons vu comment faire cela en utilisant des t
 
 La première étape consiste, comme présenté précédemment, à initialiser notre grappe de calcul. On rappelle que cette étape est spécifique au fait que l'on soit dans un notebook. Dans un environnement python classique cette étape n'existe pas.
 
-```{code-cell}
+```{code-cell} ipython3
 import ipyparallel as parallel
 clients = parallel.Client(profile="mpi")
 clients.block = True  # use synchronous computations
 print(clients.ids)
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 %%px
 from mpi4py import MPI
 import numpy as np
@@ -591,6 +593,6 @@ def compute_pi_mpi( nbbloc ):
 %timeit compute_pi_mpi(1000000)
 ```
 
-```{code-cell}
+```{code-cell} ipython3
 
 ```
