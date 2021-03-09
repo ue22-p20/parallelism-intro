@@ -12,13 +12,15 @@ kernelspec:
   name: python3
 nbhosting:
   title: "intro parall\xE9lisme"
+rise:
+  autolaunch: true
 ---
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
 # Introduction au parallélisme 
 ## Mines Paris-Tech 
-**Basile Marchand** 
+**Basile Marchand**
 
 +++ {"slideshow": {"slide_type": "slide"}}
 
@@ -47,7 +49,7 @@ Un ordinateur portable (ou pas portable d'ailleurs) c'est :
 * Un hardware : l'objet physique et ses composants
 * Du software : principalement votre système d'exploitation qui permet de faire fonctionner correctement la partie hardware
 
-Je ne m'attarderai pas plus que cela sur la partie software/OS car comme je l'ai déjà dit vous avez eu un cours la dessus. 
+Je ne m'attarderai pas plus que cela sur la partie software/OS car comme je l'ai déjà dit vous avez eu un cours la dessus.
 
 +++ {"slideshow": {"slide_type": "subslide"}}
 
@@ -56,7 +58,7 @@ En revanche si l'on regarde la partie hardware, on peut à la louche décomposer
 * La mémoire vive 
 * Le disque dur 
 
-Je sais, il y a plein d'autres trucs par exemple l'écran, la carte graphique, ... mais on va dire que selon ma définition le minimum vital pour que l'on puisse parler d'ordinateur c'est : processeur, mémoire vive et disque dur. Quoique, petit aparté, la prise en compte du disque dur peut être discutable dans ma définition car il y a aujourd'hui des ordinateurs dits *diskless*, mais c'est un autre débat. 
+Je sais, il y a plein d'autres trucs par exemple l'écran, la carte graphique, ... mais on va dire que selon ma définition le minimum vital pour que l'on puisse parler d'ordinateur c'est : processeur, mémoire vive et disque dur. Quoique, petit aparté, la prise en compte du disque dur peut être discutable dans ma définition car il y a aujourd'hui des ordinateurs dits *diskless*, mais c'est un autre débat.
 
 +++ {"slideshow": {"slide_type": "subslide"}}
 
@@ -69,7 +71,7 @@ Et donc à partir de ces éléments : comment fonctionne l'exécution d'un progr
     b. Exécute une série d'instructions ordonnée par votre programme  
     c. Range en mémoire le résultat issu de la série d'instructions  
     
-Le point important se situe au niveau de l'étape 3, i.e. le **processeur** ! 
+Le point important se situe au niveau de l'étape 3, i.e. le **processeur** !
 
 +++ {"slideshow": {"slide_type": "subslide"}}
 
@@ -77,13 +79,13 @@ Mais avant, faisons un peu d'archéologie des processeurs.
 
 Non je plaisante, je ne vais pas vous faire toute le genèse de l'informatique depuis les cartes perforées jusqu'à l'ordinateur quantique. Je me contenterai de vous donner une date clé : 2001 la sortie du POWER4 par IBM (je fais vieux sage, mais j'ai dû chercher sur Internet car à cette date je n'avais encore jamais touché un ordinateur…).
 
-Qu'est ce qu'il a de particulier ce POWER4 ? vous vous demandez. Et bien c'est le premier processeur du marché à être équipé de **deux** cœurs ! Oui vous avez bien lu **deux**. Alors puisque l'on est dans les dates on peut également citer 2005 avec la sortie des premiers processeurs Intel et AMD en dual-core. 
+Qu'est ce qu'il a de particulier ce POWER4 ? vous vous demandez. Et bien c'est le premier processeur du marché à être équipé de **deux** cœurs ! Oui vous avez bien lu **deux**. Alors puisque l'on est dans les dates on peut également citer 2005 avec la sortie des premiers processeurs Intel et AMD en dual-core.
 
 +++ {"slideshow": {"slide_type": "subslide"}}
 
 Et alors qu'est ce que ça a de révolutionnaire ? Eh bien, l'arrivée des processeurs multi-cœurs représente un changement de paradigme complet. Car avant cela il n'y avait que des processeurs mono-cœur, donc les instructions s’exécutaient en séquentiel. L'arrivée des multi-cœurs signe l'arrivée du traitement en parallèle des tâches. En effet à partir de ce moment on a deux fois plus de bras pour travailler donc on peut faire des choses simultanément. 
 
-Pour la petite histoire, pourquoi ce changement de vision brusque, passage des architectures mono-cœur à des architectures multi-cœurs ? Pour une raison toute simple, pendant des années l'évolution et la montée en gamme des processeurs était directement proportionnelle au nombre de transistors intégrés dans le processeur. Il s'agit de la fameuse loi de Moore qui stipule que le nombre de transistors constituant un processeur, et donc sa puissance de calcul, double tous les deux ans. Et pendant des années cette loi a été vérifiée et la montée en gamme des processeurs se faisait "naturellement" avec l'évolution des transistors. Sauf que vers le début des années 2000 la loi de Moore a commencé à avoir du plomb dans l'aile... et donc il a fallu trouver une parade pour continuer à faire évoluer les processeurs. La solution la plus simple a été de se dire : si on ne peut pas aller deux fois plus vite avec un processeur, eh bien on va en faire deux fois plus. Et c'est comme ça que les processeurs dual-core ont commencé à apparaître. 
+Pour la petite histoire, pourquoi ce changement de vision brusque, passage des architectures mono-cœur à des architectures multi-cœurs ? Pour une raison toute simple, pendant des années l'évolution et la montée en gamme des processeurs était directement proportionnelle au nombre de transistors intégrés dans le processeur. Il s'agit de la fameuse loi de Moore qui stipule que le nombre de transistors constituant un processeur, et donc sa puissance de calcul, double tous les deux ans. Et pendant des années cette loi a été vérifiée et la montée en gamme des processeurs se faisait "naturellement" avec l'évolution des transistors. Sauf que vers le début des années 2000 la loi de Moore a commencé à avoir du plomb dans l'aile... et donc il a fallu trouver une parade pour continuer à faire évoluer les processeurs. La solution la plus simple a été de se dire : si on ne peut pas aller deux fois plus vite avec un processeur, eh bien on va en faire deux fois plus. Et c'est comme ça que les processeurs dual-core ont commencé à apparaître.
 
 +++ {"slideshow": {"slide_type": "subslide"}}
 
@@ -108,11 +110,9 @@ Le principe est simple : on prend tout un tas d'ordinateurs (que l'on appelle n�
 1. Au niveau hardware : comment fait-on pour interconnecter de nombreux ordinateurs entre eux tout en ayant comme souci premier la performance ? 
 2. Au niveau software : comment adapter un logiciel prévu pour ne fonctionner que sur un ordinateur mono-cœur à une architecture composée de plusieurs ordinateurs connectés entre eux via un réseau dédié.
 
-Nous verrons dans la suite comment ces deux problématiques sont traitées actuellement. 
+Nous verrons dans la suite comment ces deux problématiques sont traitées actuellement.
 
 +++ {"slideshow": {"slide_type": "subslide"}}
-
-
 
 Pour vous donner quelques ordres de grandeurs voici ci-dessous l'évolution du nombre de cœurs du premier cluster Français dans le [top 500](http://www.top500.org) entre 2000 et 2017.  
 
@@ -146,7 +146,7 @@ Mais pour vous donner une application concrète recentrons nous sur des problém
 
 * l'aube est une géométrie complexe
 * le matériau constitutif de l'aube est un matériau complexe dont le comportement est gouverné par des lois non-linéaires complexes
-* le calcul doit faire intervenir les aspects thermiques, car l'aube en question se situe en sortie de chambre de combustion et est donc soumise à des gradients thermiques conséquents. 
+* le calcul doit faire intervenir les aspects thermiques, car l'aube en question se situe en sortie de chambre de combustion et est donc soumise à des gradients thermiques conséquents.
 
 +++ {"slideshow": {"slide_type": "subslide"}}
 

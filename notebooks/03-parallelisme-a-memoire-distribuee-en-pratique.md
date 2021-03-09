@@ -12,6 +12,8 @@ kernelspec:
   name: python3
 nbhosting:
   title: "m\xE9moire distribu\xE9e"
+rise:
+  autolaunch: true
 ---
 
 +++ {"slideshow": {"slide_type": "slide"}}

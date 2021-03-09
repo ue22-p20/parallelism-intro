@@ -12,6 +12,8 @@ kernelspec:
   name: python3
 nbhosting:
   title: "mod\xE8les de parall\xE9lisme"
+rise:
+  autolaunch: true
 ---
 
 +++ {"slideshow": {"slide_type": "slide"}}
