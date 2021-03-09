@@ -1,4 +1,5 @@
 ---
+celltoolbar: Slideshow
 jupytext:
   cell_metadata_filter: all,-hidden,-heading_collapsed,-run_control,-trusted
   notebook_metadata_filter: all,-language_info,-toc,-jupytext.text_representation.jupytext_version,-jupytext.text_representation.format_version
@@ -13,17 +14,21 @@ nbhosting:
   title: "m\xE9moire partag\xE9e"
 ---
 
++++ {"slideshow": {"slide_type": "slide"}}
+
 # Parallélisme à mémoire partagée
 
-+++
++++ {"slideshow": {"slide_type": "slide"}}
 
 ## Les limitations de Python
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Dans cette partie nous allons voir comment se déroule en pratique le parallélisme à mémoire partagée, plus communément appelé multi-thread. 
 
 Il faut cependant noter quelque chose d'assez cocasse, c'est que Python n'est pas le langage le plus adapté pour faire du parallélisme à mémoire partagée, il est en fait incapable d'en faire à cause du GIL. C'est qui ce GIL ? C'est le ***Global Interpreter Lock***, et il porte bien son nom car il a pour seul vocation de bloquer l'exécution parallèle de Python. C'est à dire qu'il a pour seul et unique but de s'assurer que lorsqu'un thread travaille les autres sont *bloqués et attendent*.
+
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Je suis sûr que vous n'avez alors qu'une seule question qui vous vient à l'esprit, c'est pourquoi introduire ce GIL alors que toutes les machines disposent maintenant de processeur permettant de faire du multi-threading ? La réponse le plus concise et la plus complète est : **c'est historique**. Bienvenue dans le monde du développement. Pour les curieux vous pouvez suivre ce [lien](https://wiki.python.org/moin/GlobalInterpreterLock) pour avoir plus d'informations. Mais assez grossièrement c'est essentiellement pour prévenir tout problème de *race condition*. 
 
@@ -31,19 +36,19 @@ Néanmoins, malgré les limitations du langage nous pouvons quand même faire de
 
 Pour finir je vous montrerai deux exemples de multi-threading faits en C++ afin que vous ayez une vision plus réaliste du fonctionnement.
 
-+++
++++ {"slideshow": {"slide_type": "slide"}}
 
 ## Du vrai multi-thread en Python - le module `threading`
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour commencer nous allons voir comment nous pouvons via le module `threading` de Python faire des choses qui en terme de développement s'apparentent très fortement à du multi-threading classique mais qui en revanche en terme de performance n'offriront pas les résultats attendus puisque les threads seront tous exécutés sur le même cœur.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 ### Création et utilisation des threads
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Tout d'abord rappelons ce qu'est un `thread`. Un thread, également appelé processus léger, correspond à une partie d'un processus. Il s'agit donc d'un ensemble d'instruction machine.
 
@@ -51,7 +56,7 @@ La différence entre *thread* et *process* se situe au niveau du fait qu'un proc
 
 Un process peut créer autant de thread qu'il le souhaite cela implique alors que tous les threads vont se partager la même mémoire et donc pouvoir accéder aux mêmes variables en lecture et en écriture. C'est pour cette raison que l'on parle de parallélisme à **mémoire partagée**.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Le processus de création et d'exécution d'un thread peut se définir de la manière suivante : 
 
@@ -60,15 +65,23 @@ Le processus de création et d'exécution d'un thread peut se définir de la man
 3. On lance l'exécution des threads qui vont alors se mettre à effectuer les instructions qui leurs sont propres
 4. On demande dans le programme principal, si besoin, l'attente de la terminaison des threads.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour illustrer cela nous allons faire un programme qui va lancer deux threads, chaque thread n'aura pour tâche que d'afficher un message en boucle 10 fois. Pour cela en Python il faut utiliser l'object `Thread` du module `threading`.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 from threading import Thread
 ```
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 def thread_function(tid):
     """
     La fonction utilisée dans les threads
@@ -93,15 +106,21 @@ for t in threads:
     t.join()
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 Dans le cas précédent les deux threads exécutent la même fonction avec des arguments d'entrée différents mais il est tout à fait possible de donner aux threads des tâches complètement différentes. Par exemple faisons le cas d'un thread qui va afficher un message pendant qu'un autre écrit un fichier texte.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 def task_1():
     for i in range(10):
         print("I am the first thread I do nothing")
         
 def task_2():
-    with open("/tmp/stupid.txt", "w") as fid:
+    with open("stupid.txt", "w") as fid:
         fid.write("I am the second thread")
         
 threads = [ Thread(target=task_1), Thread(target=task_2)]
@@ -111,20 +130,26 @@ for t in threads:
 for t in threads:
     t.join()
 
-with open("/tmp/stupid.txt", "r") as fid:
+with open("stupid.txt", "r") as fid:
     print(f"File content : {fid.read()}")
  
 ```
+
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Quel intérêt d'avoir un thread qui s'occupe d'écrire un fichier me direz vous ! Et bien beaucoup en fait. Par exemple dans un certain nombre d'applications les étapes d'écriture/lecture (que l'on appelle étape d'IO) peuvent représenter un pourcentage non négligeable du temps d'exécution global de l'application. Il est donc dans ce cas pertinent de déléguer ces tâches à un thread qui s'occupe de ça pendant que le programme principale fait d'autres tâches.
 
 Un autre intérêt majeur de ce genre d'application est dans la conception d'interfaces graphiques. Par exemple dans de nombreuses interfaces il est pertinent de mettre en place un système de sauvegarde automatique, afin de s'éviter les foudres des utilisateurs en cas de plantages/interruptions impromptus de l'interface. Pour mettre en place ce genre de mécanismes la solution standard est de créer un thread qui va s'occuper de faire une sauvegarde de l'état de l'interface de manière régulière.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour le moment me direz vous on ne voit pas bien l'aspect mémoire partagé. Et vous avez raison, pour remédier à cela je vous propose tout de suite un exemple d'un programme qui va être chargé de tirer aléatoirement une série de nombres, chaque thread (on a n threads) s'occupera de tirer N/n nombres aléatoires et les rangera dans un tableau commun.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 import random
 
 def fill_random( tid, N, tab ):
@@ -148,19 +173,25 @@ for t in threads:
 print(res)
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 Avec cet exemple on a donc deux threads qui opèrent sur une zone mémoire commune. En revanche vous pouvez noter que j'ai bien fait attention à ce que chaque thread écrive dans sa partie du tableau commun car si ce n'est pas le cas les valeurs vont s'écraser entre elles et le résultat sera indéterminé.
 
-+++
++++ {"slideshow": {"slide_type": "slide"}}
 
 ### Notion de vérouillage
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Mais parfois il n'est pas possible de faire en sorte que chaque thread écrive des données dans une case mémoire distincte de celle de son voisin. Dans ce cas là il existe un mécanisme permettant de garantir le fait que quand un thread "touche" une variable les autres threads pouvant exister n'y touchent pas.
 
 Considérons par exemple le cas d'un programme où tous les threads doivent incrémenter la même variable. Dans ce cas afin de garantir que le programme est ***thread-safe*** il est nécessaire de verrouiller la variable lorsqu'un thread écrit dans cette dernière. Ce verrouillage se fait à l'aide de la méthode `acquire` du `Lock`. **Attention** il est impératif de déverrouiller le lock ensuite sinon votre programme va rester bloqué indéfiniment.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 from threading import Lock 
 
 class Counter:
@@ -194,13 +225,15 @@ for t in threads:
 print(f"Counter = {counter.current()}")
 ```
 
++++ {"slideshow": {"slide_type": "fragment"}}
+
 Il est important de noter que le `Lock` est unique et partagé entre tous les threads c'est d'ailleurs cela qui lui permet d'assurer le verrouillage des variables entre threads.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 ### Les limitations
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour finir sur l'usage du multi-threading faisons un exemple classique qui est le calcul de $\pi$. Pour rappel il existe une zoologie complète de méthodes pour approximer $\pi$ nous allons ici utiliser l'approximation par une intégrale. Cette approche nous permet d'exprimer $\pi$ de la manière suivante :
 
@@ -215,6 +248,10 @@ Cette expression nous permet alors de voir comment implémenter notre calcul de 
 Commençons par implémenter la version séquentielle du calcul de $\pi$. Cela donne la fonction suivante :
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 def compute_pi_sequential( nbpoint ):
     s = 0
     l = 1./nbpoint
@@ -229,15 +266,23 @@ from math import pi
 print(f"math.pi = {pi} => error = {abs(pi - pi_estimated)/pi * 100}%")
 ```
 
++++ {"slideshow": {"slide_type": "fragment"}}
+
 On obtient donc une estimation de la valeur de $\pi$ vraie à $10^{-11}$ donc relativement bonne. Regardons maintenant le temps que met cette estimation à être réalisée.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 %timeit compute_pi_sequential(100000000)
 ```
 
++++ {"slideshow": {"slide_type": "fragment"}}
+
 On constate donc qu'il nous faut environ 15 secondes pour calculer une approximation de $\pi$ précise à $10^{-11}$.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Maintenant réalisons le même calcul mais en utilisant des **threads**. Pour cela il suffit de séparer notre somme en autant de sommes qu'il y a de threads.
 
@@ -247,6 +292,10 @@ $$ \pi \simeq \sum_{k=0}^{n_{thread}-1} \left(  \sum_{i=k*\frac{N}{n_{thread}}}^
 On peut alors à partir de cette expression définir la fonction qui sera utilisée dans chaque *thread* pour calculer sa contribution à $\pi$.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 def pi_thread_worker( nbpoint, tid, nbthread, output ):
     s = 0
     l = 1./nbpoint
@@ -261,9 +310,15 @@ def pi_thread_worker( nbpoint, tid, nbthread, output ):
     output[tid] = s
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 Nous pouvons alors écrire la fonction `compute_pi_thread` qui va s'occuper de créer et lancer les threads et de faire la somme des contributions de chaque thread.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 def compute_pi_thread( nbpoint, nbthread ):
     
     pi_contrib = [0]*nbthread
@@ -282,13 +337,21 @@ from math import pi
 print(f"math.pi = {pi} => error = {abs(pi - pi_est_thread)/pi * 100}%")
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 Si maintenant on regarde en terme de temps de calcul pour différents nombres de threads utilisés on obtient le résultat suivant :
 
 ```{code-cell} ipython3
-%timeit compute_pi_thread(10000000,1)
-%timeit compute_pi_thread(10000000,2)
-%timeit compute_pi_thread(10000000,4)
+---
+slideshow:
+  slide_type: fragment
+---
+%timeit compute_pi_thread(1000000,1)
+%timeit compute_pi_thread(1000000,2)
+%timeit compute_pi_thread(1000000,4)
 ```
+
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Alors là, le risque est que vous fermiez le notebook en vous disant que je raconte n'importe quoi depuis le début car les temps sont les mêmes peu importe le nombre de threads et il s'agit du même temps que la version séquentielle. 
 
@@ -298,43 +361,63 @@ Je répondrai à cette remarque (si vous n'êtes pas encore parti m'insulter sur
 
 Donc à chaque fois qu'un thread travaille, les autres sont à l'arrêt à attendre des ressources. C'est ce qui au final conduit à ce temps multi-thread qui est le même qu'en exécution séquentielle.
 
-+++
++++ {"slideshow": {"slide_type": "slide"}}
 
 ### Exemple de vrai multi-threading en c++
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour que vous ne restiez pas frustré par les limitations de Python. Je vous propose de reprendre le calcul de $\pi$ mais en c++ pour vous montrer l'intérêt de la démarche. Voici ci-dessous un code c++ qui correspond exactement à ce que nous avons implémenté en Python.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 !cat ../cpp/pi_thread.cpp
 ```
+
++++ {"slideshow": {"slide_type": "subslide"}}
 
 On compile alors ce code avec gcc en activant le support du c++11 et en faisant le *link* avec la librairie de gestion des threads du système d'exploitation, sous Linux, **pthread**.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 !g++ -std=c++11 ../cpp/pi_thread.cpp -lpthread -o ../cpp/pi_thread
 ```
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 !/usr/bin/time --format "%E elapsed %PCPU" ../cpp/pi_thread 1 display
 ```
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 !/usr/bin/time --format "%E elapsed %PCPU" ../cpp/pi_thread 2 
 !/usr/bin/time --format "%E elapsed %PCPU" ../cpp/pi_thread 3
 !/usr/bin/time --format "%E elapsed %PCPU" ../cpp/pi_thread 4
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 On constate donc que dans l'implémentation c++ on a bien un véritable apport du multi-threading en terme de temps de calcul, puisque l'on a une réduction notable du temps de calcul avec le nombre de threads.
 
 On peut également remarquer au passage que le pourcentage de CPU utilisé augmente proportionnellement au nombre de threads ce qui implique donc que notre programme utilise plusieurs cœurs du processeur.
 
-+++
++++ {"slideshow": {"slide_type": "slide"}}
 
 ## Du vrai-faux multi-thread en Python - le module `multiprocessing`
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Nous venons de voir que le multithread standard en Python n'apporte rien en terme de performance et ne permet pas d'exploiter les architectures multi-cœurs des processeurs modernes.
 
@@ -349,12 +432,22 @@ Pour la simple est bonne raison que le multi-processing ce n'est plus du parall�
 Fort heureusement les personnes qui ont développé le module `multiprocessing` ont pensé à tout et ont mis en place un mécanisme de queue permettant aux process de communiquer entre eux ! De la même manière ces gens (loués soient-ils) se sont arrangés pour avoir une API dans le module `multiprocessing` la plus proche possible de celle du module `threading`.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 from multiprocessing import Process
 ```
+
++++ {"slideshow": {"slide_type": "fragment"}}
 
 Concrètement si on reprend le tout premier exemple, celui où deux threads affichent en boucle un message et qu'on l'adapte en multiprocessing cela donne :
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 def process_function(tip):
     """
     La fonction utilisée dans les process
@@ -380,17 +473,23 @@ for p in procs:
     p.join()
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 La première remarque à faire est que dans ce cas les différences avec la version multithread sont plus que minimes, il suffit de remplace `Thread` par `Process` et ça fonctionne.
 
 Ensuite on peut constater que l'affichage se fait de manière complètement aléatoire ce qui est caractéristique de plusieurs process s’exécutant en même temps. Bien évidemment comme pour le module `threading` il est tout à fait possible d'affecter à chaque process des tâches différentes. 
 
 Vous pouvez pour vous entraîner, écrire l'exemple où un thread affiche un message tandis que l'autre écrit dans un fichier texte, en mode multiprocessing.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Reprenons maintenant l'exemple plus intéressant de plusieurs threads chargés de remplir un tableau de nombres aléatoires.  La transposition de cet exemple avec le module `multiprocessing` donne le code suivant :
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 import random
 def fill_random( tid, N, tab):
     offset = tid*N
@@ -415,13 +514,15 @@ for p in procs:
 print(res)
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 Et là c'est le drame... le tableau n'est pas rempli alors que lorsqu'on l'affiche au niveau des process il y a bien des valeurs dedans !!!!
 
 Et bien c'est normal, je vous l'ai dit la différence entre un thread et un process se joue au niveau de la mémoire, qui est commune entre un thread et le process qui l'a créé mais différente entre un process fils et son process père. 
 
 Donc dans ce cas il va falloir faire un peu plus de modifications pour que notre programme donne le bon résultat.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour obtenir le bon résultat nous allons devoir utiliser l'objet `Queue`. Celui-ci permet de créer un espace de stockage commun entre le process père et les process fils qu'il a créés. Cela va ainsi nous permettre de faire remonter au process père les valeurs générées par les sous-process.
 
@@ -433,6 +534,10 @@ Dans les faits l'objet `Queue` n'est pas vraiment un espace mémoire partagé. I
 Il existe également la méthode `empty` que l'on va utiliser et qui permet de vérifier s'il reste des données dans la queue ou non.
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 from multiprocessing import Queue
 
 import random
@@ -471,20 +576,22 @@ for x in zip(*tabs):
 print(f"Final tab: {final}")
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 On constate donc que le code précédent permet de faire exactement ce que l'on souhaite en revanche, je vous l'accorde, cela nécessite un peu plus de code notamment à la fin pour reconstruire le tableau final. C'est le prix à payer pour pouvoir exploiter réellement les différents cœurs de votre processeur avec Python: ***no pain, no gain***.
 
 Certains d'entre vous auront peut-être remarqué aussi que le code précédent à également un petit désavantage en terme d'occupation mémoire. En effet dans chaque sous-process la première chose que je fais c'est recréer le tableau complet, y compris les zones du tableau qui ne concernent pas le process courant. Donc au lieu d'avoir seulement $N$ entiers à stocker en mémoire et à partager j'ai $N_{process}*N$ entiers, ce qui dans le cas d'un grand nombre de process et de tableaux très grands peut être très très pénalisant.
 
-+++
++++ {"slideshow": {"slide_type": "fragment"}}
 
 **Exercice** : refaites une version précédente du problème de remplissage d'un tableau aléatoire sans avoir le problème de l'occupation mémoire qui augmente.
 ***Indice*** : il y a plusieurs manières de faire ça, uniquement avec ce qui est présenté ici et un peu de débrouillardise. Ou alors en étant encore plus malin et en allant faire un tour dans la documentation du module `multiprocessing`.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 #### Les locks ?
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Et bien les lock il y en a dans le module `multiprocessing` mais il ne servent à rien. En effet aucun risque que deux process écrivent dans la même case mémoire en même temps vu qu'ils n'ont pas accès aux mêmes zones mémoires ! 
 
@@ -492,6 +599,10 @@ Et bien les lock il y en a dans le module `multiprocessing` mais il ne servent �
 Je nuance quand même ma réponse en précisant que les `Lock` de multiprocessing ont quand même une raison d'être. C'est dans le cas où les sous-process doivent interagir avec l'extérieur. Par exemple si je demande à tous mes sous-process d'ouvrir un fichier, d'écrire une ligne dedans et de le refermer, et bien sans le mécanisme de verrouillage ça va plutôt très mal se passer. Alors qu'en mettant un petit lock au moment de l'ouverture et écriture du fichier et bien ça va fonctionner. Cela donnerait par exemple quelque chose du genre :
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 from multiprocessing import Lock
 import random
 def worker(pid, fname, lock):
@@ -525,13 +636,15 @@ with open(fname) as fid:
     
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 Ainsi en utilisant le `Lock` on a pu écrire dans le même fichier depuis deux process différents sans faire de catastrophe. Il faut cependant faire attention à l'usage abusif des `Lock` car si on met des verrouillages partout l'aspect multicœurs perd de son intérêt car le principe même du lock c'est de faire en sorte que lorsqu'un process fait quelque chose tous les autres attendent. Donc parfois il vaut mieux faire des choses un peu plus coûteuses en calcul mais sans `Lock`. C'est problème dépendant.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 #### Retour sur le calcul de $\pi$
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour finir ce tour d'horizon sur les processus pour exploiter l'architecture multi-coeurs de votre ordinateur revenons ur notre problème de calcul d'une approximation de $\pi$. On rappelle que $\pi$ peut se calculer numériquement de la manière suivante : 
 
@@ -541,6 +654,10 @@ $$ \pi \simeq \sum_{k=0}^{n_{thread}-1} \left(  \sum_{i=k*\frac{N}{n_{thread}}}^
 A partir de là nous pouvons facilement transposer le code multi-thread présenté plus haut à du multiprocessing. Cela donnerait la solution suivante :
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 def pi_process_worker( nbpoint, pid, nbproc, output ):
     s = 0
     l = 1./nbpoint
@@ -555,11 +672,17 @@ def pi_process_worker( nbpoint, pid, nbproc, output ):
     output.put( s )
 ```
 
++++ {"slideshow": {"slide_type": "fragment"}}
+
 La seule différence notable entre la fonction `pi_process_worker` et `pi_thread_worker` se situe dans l'argument `output` qui dans la version multithread était une liste Python alors que dans la version multiprocess il s'agit d'une `Queue` dans laquelle on va ranger la contribution à $\pi$ du processus courant.
 
 Nous pouvons alors définir la fonction qui va créer les processus de la manière suivante :
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
 def compute_pi_process(nbpoint, nbproc):
     
     pi_contrib = Queue()
@@ -581,33 +704,53 @@ from math import pi
 print(f"math.pi = {pi} => error = {abs(pi - pi_est_proc)/pi * 100}%")
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 Nous pouvons maintenant regarder en terme de temps de calcul ce que l'utilisation du multiprocessing nous apporte. Pour rappel le temps de calcul en séquentiel est le suivant :
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 %timeit compute_pi_sequential(10000000)
 ```
+
++++ {"slideshow": {"slide_type": "fragment"}}
 
 En utilisant alors la version multiprocess avec deux sous-process on obtient
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 %timeit compute_pi_process(10000000,2)
 ```
+
++++ {"slideshow": {"slide_type": "fragment"}}
 
 On constate donc que l'on a un gain d'un facteur un peu moins de deux entre la version séquentielle et la version 2 process.
 
 Essayons donc avec 4 !
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: fragment
+---
 %timeit compute_pi_process(10000000,4)
 ```
 
++++ {"slideshow": {"slide_type": "subslide"}}
+
 On constate alors que le gain sur 4 cœurs n'est pas au rendez vous !! Encore une fois vous commencez à vous dire que je suis un rigolo !! Mais non ne vous inquiétez pas c'est normal. Le problème ici c'est que sur mon ordinateur portable je n'ai que 4 cœurs. Or j'ai déjà des ressources occupées par mon firefox pour écrire ce notebook, le thunderbird pour lire tous les mails passionnants... Donc même si sur le principe j'ai de quoi lancer 4 process tranquillement, dans les faits les ressources ne sont pas disponibles donc les process attendent un peu leur tour pour avoir du CPU d'où l'absence de gain sur 4 cœurs.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour vous prouver que je ne dis pas n'importe quoi j'ai repris exactement le même code et je l'ai fait tourner sur un nœud du cluster du Centre des Matériaux. Pour information les nœuds du cluster disposent de deux processeurs Intel à 12 cœurs chacun. Je suis donc monté jusqu'à 24 processus en parallèle et voici ci-dessous les résultats :
 
-+++
++++ {"slideshow": {"slide_type": "fragment"}}
 
 1 process  => 0:01.83elapsed 99%CPU  
 2 process  => 0:01.00elapsed 186%CPU  
@@ -623,14 +766,14 @@ Pour vous prouver que je ne dis pas n'importe quoi j'ai repris exactement le mê
 22 process => 0:00.18elapsed 1228%CPU  
 24 process => 0:00.17elapsed 1277%CPU
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 On constate alors avec les temps de calcul mesurés sur le cluster que le multiprocessing apporte vraiment quelque chose puisque l'on arrive à atteindre un facteur presque 11 sur le temps de calcul de $\pi$.
 
 Vous pourriez alors me faire remarquer qu'idéalement le facteur devrait être 24 ! Je vous dirai c'est vrai mais dans ce cas ce n'est pas possible, non pas à cause de la technologie mais à cause du problème. En effet le problème ici est trop "petit" ce qui fait qu'au niveau de chaque sous-process il ne reste plus grand chose à faire et donc on perd quasiment plus de temps à créer les sous-process qu'à les exécuter. Cela se voit très bien notamment au niveau de l'utilisation du CPU. On constate que l'on plafonne à 1200% d'utilisation ce qui implique que l'intensité algorithmique de notre problème est trop faible.
 Il y a une manière très simple de remédier à cela dans notre cas. C'est de demander à calculer $\pi$ avec une plus grande précision donc avec plus de points. Prenons par exemple $10^{9}$ points au lieu des $10^7$ utilisés précédemment. Dans ce cas on obtient les nouveaux résultats :
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 1 process => 2:55.53elapsed 99%CPU  
 2 process => 1:27.95elapsed 199%CPU  
@@ -646,11 +789,11 @@ Il y a une manière très simple de remédier à cela dans notre cas. C'est de d
 22 process => 0:10.14elapsed 2078%CPU  
 24 process => 0:10.05elapsed 2096%CPU
 
-+++
++++ {"slideshow": {"slide_type": "fragment"}}
 
 On obtient donc au mieux un facteur d'accélération de 17. Ce qui est plus honorable que précédemment. Et on le voit notamment au niveau de l'usage du CPU avec un usage de 2000% bien plus intéressant que le 1200% précédent.
 
-+++
++++ {"slideshow": {"slide_type": "subslide"}}
 
 Pour conclure sur les aspects de parallélisme process et thread, il est important de noter que ce n'est pas la méthode miracle et que dans de nombreuses applications l'effort nécessaire pour mettre en place ce type de mécanisme n'en vaut pas le gain.
 
