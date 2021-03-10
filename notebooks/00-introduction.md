@@ -160,5 +160,27 @@ Pour cela le principe est de décomposer le problème initial en $N$ sous-probl�
 </tr></table>
 
 ```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
+from IPython.display import HTML
+
+# Youtube
+HTML('<iframe width="1120" height="630" src="https://www.youtube.com/embed/hhB7zQuL2QA?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe>')
+```
+
+```{code-cell} ipython3
+---
+slideshow:
+  slide_type: subslide
+---
+from IPython.display import HTML
+
+# Youtube
+HTML('<iframe width="1120" height="630" src="https://www.youtube.com/embed/5x3UTOvm8AA?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe>')
+```
+
+```{code-cell} ipython3
 
 ```
